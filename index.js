@@ -1,7 +1,9 @@
 const http = require('http');
 
+// PORT
 const PORT = process.env.PORT || 5000;
 
+// DATABASE
 const notesState = {
   currentID: 2,
   notes: [{
@@ -16,84 +18,152 @@ const notesState = {
   },]
 };
 
+// FUNCTION GENERATE NEW NOTE OBJECT
+const generateNote = (id, name) => {
+  return {
+    id: id,
+    name: `${name}`,
+    isComplete: false,  
+  };
+};
+
+// RESPONSE GENERATOR
+const generateResponse = (status, message, payload) => {
+  if(status === 'success')
+    return {
+      status: status,
+      message: message, 
+      data: payload,
+    };
+  return {
+    status: status,
+    message: message,
+    error: payload,
+  };
+};
+
 // FUNCTION TO GET ALL NOTES
-const sendNotesData = () => {
-  return JSON.stringify(notesState.notes);
+const sendNotesData = ( response ) => {
+  try {
+    response.writeHead(200, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('success', 'sucessfully fetched all the notes data', notesState.notes.filter( note => !note.isComplete)));
+  } catch ( error ) {
+    response.writeHead(500, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('failure', 'internal server error', error.message));
+  }
 };
 
 // FUNCTION TO STORE NOTES IN ARRAY
-const storeNote = (note) => {
-  notesState.notes.push({
-    id: notesState.currentID + 1,
-    name: `${note.name}`,
-    isComplete: false,  
-  });
-
-  notesState.currentID+=1;
-
-  return JSON.stringify({
-    status: 'success',
-    message: 'data stored succesfully',
-    data: [ ...notesState.notes ],
-  });
+const storeNote = ( response, note ) => {
+  try {
+    notesState.notes.push(generateNote(notesState.currentID + 1, note.name));
+    notesState.currentID+=1;
+    response.writeHead(201, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('success', 'data stored succesfully', [ 3 ]));
+  } catch ( error ) {
+    response.writeHead(500, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('failure', 'internal server error', error.message));
+  }
 };
 
 // FUNCTION TO GET NOTES BY ID 
-const getNotesById = (id) => {
-  const note = notesState.notes.filter((note) => note.id === id);
-
-  if(note.length === 0)
+const getNotesById = ( response, id ) => {
+  try {
+    const note = notesState.notes.filter((note) => note.id === id);
+    if(note.length === 0 || note[0].isComplete) {
+      response.writeHead(404, { 'Content-Type': 'application/json' });
+      return JSON.stringify({
+        status: 'failure',
+        message: `can't find note with id ${id}`,
+        data: [],
+      });
+    }
+    response.writeHead(200, { 'Content-Type': 'application/json' });
     return JSON.stringify({
-      status: 'failure',
-      message: `can't find note with id ${id}`,
-      data: [],
+      status: 'success',
+      message: `found note with id ${id}`,
+      data: [ ...note ],
     });
-
-  return JSON.stringify({
-    status: 'success',
-    message: `found note with id ${id}`,
-    data: [ ...note ],
-  });
+  } catch ( error ) {
+    response.writeHead(500, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('failure', 'internal server error', error.message));
+  }
 };
 
 // FUNCTION TO UPDATE ALL VALUE OF NOTE
-const updateNote = ( id, updatedNote ) => {
-  const indexOfNote = notesState.notes.findIndex((note) => note.id === id);
-
-  if(indexOfNote === -1)
+const updateNote = ( response, id, updatedNote ) => {
+  try {
+    const indexOfNote = notesState.notes.findIndex((note) => note.id === id);
+    if(indexOfNote === -1){
+      response.writeHead(404, { 'Content-Type': 'application/json' });
+      return JSON.stringify({
+        status: 'failure',
+        message: `can't find note with id ${id}`,
+        data: [],
+      });
+    }
+  
+    notesState.notes[indexOfNote] = updatedNote;
+    response.writeHead(200, { 'Content-Type': 'application/json' });
     return JSON.stringify({
-      status: 'failure',
-      message: `can't find note with id ${id}`,
-      data: [],
+      status: 'success',
+      message: `updated note with id ${id}`,
+      data: [ updatedNote ],
     });
-
-  notesState.notes[indexOfNote] = updatedNote;
-
-  return JSON.stringify({
-    status: 'success',
-    message: `updated note with id ${id}`,
-    data: [ updatedNote ],
-  });
+  } catch (error) {
+    response.writeHead(500, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('failure', 'internal server error', error.message));
+  }
 };
 
 // FUNCTION TO UPDATE PARTICULAR FIELD OF NOTE
-const patchNode = ( id, noteField ) => {
-  const indexOfNote = notesState.notes.findIndex((note) => note.id === id);
+const patchNode = ( response, id, noteField ) => {
+  try{
+    const indexOfNote = notesState.notes.findIndex((note) => note.id === id);
+    if(indexOfNote === -1){
+      response.writeHead(404, { 'Content-Type': 'application/json' });
+      return JSON.stringify({
+        status: 'failure',
+        message: `can't find note with id ${id}`,
+        data: [],
+      });
+    }
 
-  if(indexOfNote === -1)
+    notesState.notes = notesState.notes.map( note => note.id === id ? { ...note, ...noteField } : note );
+    response.writeHead(200, { 'Content-Type': 'application/json' });
     return JSON.stringify({
-      status: 'failure',
-      message: `can't find note with id ${id}`,
-      data: [],
+      status: 'success',
+      message: `updated note with id ${id}`,
+      data: [ notesState.notes[indexOfNote] ],
     });
-
-  notesState.notes = notesState.notes.map( note => note.id === id ? { ...note, ...noteField } : note );
-
-  return JSON.stringify({
-    status: 'success',
-    message: `updated note with id ${id}`,
-    data: [ notesState.notes[indexOfNote] ],
-  });
+  } catch (error) {
+    response.writeHead(500, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('failure', 'internal server error', error.message));
+  }
+};
+// FUNCTION TO DELETE NOTE
+const deleteNote = (response, id) => {
+  try {
+    const indexOfNote = notesState.notes.findIndex((note) => note.id === id);
+    if(indexOfNote === -1){
+      response.writeHead(404, { 'Content-Type': 'application/json' });
+      return JSON.stringify({
+        status: 'failure',
+        message: `can't find note with id ${id}`,
+        data: [],
+      });
+    }
+    notesState.notes[indexOfNote].isComplete = true;
+    response.writeHead(200, { 'Content-Type': 'application/json' });
+    return JSON.stringify({
+      status: 'success',
+      message: `deleted note with id ${id}`,
+      data: [ notesState.notes[indexOfNote] ],
+    });
+  } catch (error) {
+    response.writeHead(500, { 'Content-Type': 'application/json' });
+    return JSON.stringify(generateResponse('failure', 'internal server error', error.message));
+  }
 };
 
 // REQUEST FUNCTION
@@ -104,10 +174,10 @@ const requestFunction = (req, res) => {
 
   case 'GET': {
     if(pathParam === '/tasks')
-      res.write(sendNotesData());
+      res.write(sendNotesData(res));
     if(pathParam.includes('/tasks/'))
       res.write( 
-        getNotesById( 
+        getNotesById(res,  
           Number( 
             pathParam.substring( 
               pathParam.lastIndexOf('/') + 1
@@ -127,7 +197,7 @@ const requestFunction = (req, res) => {
         body += chunk.toString(); 
       });
       req.on('end', () => { 
-        res.end(storeNote(JSON.parse(body))); 
+        res.end(storeNote(res, JSON.parse(body))); 
       });
     }
   }
@@ -140,7 +210,7 @@ const requestFunction = (req, res) => {
         body += chunk.toString(); 
       });
       req.on('end', () => { 
-        res.end(updateNote(Number(pathParam.substring(pathParam.lastIndexOf('/') + 1)), JSON.parse(body))); 
+        res.end(updateNote(res, Number(pathParam.substring(pathParam.lastIndexOf('/') + 1)), JSON.parse(body))); 
       });
     }
   }
@@ -153,9 +223,17 @@ const requestFunction = (req, res) => {
         body += chunk.toString(); 
       });
       req.on('end', () => { 
-        res.end(patchNode(Number(pathParam.substring(pathParam.lastIndexOf('/') + 1)), JSON.parse(body))); 
+        res.end(patchNode(res, Number(pathParam.substring(pathParam.lastIndexOf('/') + 1)), JSON.parse(body))); 
       });
     }
+  }
+    break;
+
+  case 'DELETE': {
+    if(pathParam.includes('/tasks/')) {
+      res.write(deleteNote(res, Number(pathParam.substring(pathParam.lastIndexOf('/') + 1)))); 
+    }
+    res.end();
   }
     break;
 
