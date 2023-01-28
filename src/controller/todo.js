@@ -20,4 +20,15 @@ const putTodo = (req, res) => {
   res.json(todoService.putTodo(id, todoData, res));
 };
 
-module.exports = { getAllTodo, getTodoById, addTodo, putTodo };
+const patchTodo = (req, res) => {
+  const id = Number(req.params.id);
+  const todoData = req.body;
+  res.json(todoService.patchTodo(id, todoData, res));
+};
+
+const deleteTodo = (req, res) => {
+  const id = Number(req.params.id);
+  res.json(todoService.deleteTodo(id, res));
+};
+
+module.exports = { getAllTodo, getTodoById, addTodo, putTodo, patchTodo, deleteTodo };

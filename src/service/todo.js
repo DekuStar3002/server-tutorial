@@ -21,7 +21,7 @@ const getAllTodos = (response) => {
 
 const getTodoById = (id, response) => {
   try {
-    const todos = database.todos.filter(todo => todo.id === id);
+    const todos = database.todos.filter(todo => todo.id === id && !todo.isCompleted);
     if(todos.length === 0){
       response.status(404);
       return {
@@ -54,7 +54,7 @@ const addTodo = (todoData, response) => {
     return {
       status: 'success',
       message: 'data added successfully',
-      data: database.todos,
+      data: database.todos.filter( todo => !todo.isCompleted),
     };
   } catch (error) {
     response.status(500);
@@ -94,4 +94,60 @@ const putTodo = (id, todoData, response) => {
   }
 };
 
-module.exports = { getAllTodos, getTodoById, addTodo, putTodo };
+const patchTodo = (id, todoBody, response) => {
+  try {
+    const index = database.todos.findIndex( todo => todo.id === id && !todo.isCompleted);
+    if(index === -1) {
+      response.status(404);
+      return {
+        status: 'failure',
+        message: `unable to find data with id ${id}`,
+        data: [],
+      };
+    }
+    response.status(200);
+    database.todos = database.todos.map(todo => todo.id === id ? { ...todo, ...todoBody } : todo);
+    return {
+      status: 'success',
+      message:`successfully updated the data with id ${id}`,
+      data: database.todos,
+    };
+  } catch (error) {
+    response.status(500);
+    return {
+      status: 'failure',
+      message: 'unable to update data',
+      error: error.message,
+    };
+  }
+};
+
+const deleteTodo = (id, response) => {
+  try {
+    const index = database.todos.findIndex( todo => todo.id === id );
+    if(index === -1){
+      response.status(404);
+      return {
+        status: 'failure',
+        message: `unable to find item with id ${id}`,
+        data: []
+      };
+    }
+    database.todos = database.todos.map(todo => todo.id === id ? { ...todo, isCompleted: true } : todo );
+    response.status(200);
+    return {
+      status: 'success',
+      message: `delete item with id ${id}`,
+      data: [ database.todos[index] ],
+    };
+  } catch (error) {
+    response.status(500);
+    return {
+      status: 'failure',
+      message: 'unable to update data',
+      error: error.message,
+    };
+  }
+};
+
+module.exports = { getAllTodos, getTodoById, addTodo, putTodo, patchTodo, deleteTodo };

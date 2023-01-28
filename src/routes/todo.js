@@ -8,6 +8,8 @@ router.route('/todo')
 
 router.route('/todo/:id')
   .get(todoController.getTodoById)
-  .put(todoController.putTodo);
+  .put(todoController.putTodo)
+  .patch(todoController.patchTodo)
+  .delete(todoController.deleteTodo);
 
 module.exports = router;
