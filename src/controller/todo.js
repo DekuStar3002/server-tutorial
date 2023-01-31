@@ -1,34 +1,88 @@
 const { todoService } = require('../service/index');
 
-const getAllTodo = (req, res) => {
-  res.json(todoService.getAllTodos(res));
+const getAllTodo = async (req, res) => {
+  try {
+    const data = await todoService.getAllTodos();
+    res.status(200).json({
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
-const getTodoById = (req, res) => {
-  const id = Number(req.params.id);
-  res.json(todoService.getTodoById(id, res));
+const getTodoById = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const todo = await todoService.getTodoById(id);
+    res.status(200).json({
+      data: todo ? [todo] : [],
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
-const addTodo = (req, res) => {
-  const todoData = req.body;
-  res.json(todoService.addTodo(todoData, res));
+const addTodo = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const todo = await todoService.addTodo(name);
+    res.status(201).json({
+      data: [ todo ],
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
-const putTodo = (req, res) => {
-  const id = Number(req.params.id);
-  const todoData = req.body;
-  res.json(todoService.putTodo(id, todoData, res));
+const putTodo = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { body } = req;
+    const todo = await todoService.putTodo(id, body);
+    res.status(200).json({
+      data: todo,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
-const patchTodo = (req, res) => {
-  const id = Number(req.params.id);
-  const todoData = req.body;
-  res.json(todoService.patchTodo(id, todoData, res));
+const patchTodo = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { body } = req;
+    const todo = await todoService.patchTodo(id, body);
+    res.status(200).json({
+      data: todo,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
-const deleteTodo = (req, res) => {
-  const id = Number(req.params.id);
-  res.json(todoService.deleteTodo(id, res));
+const deleteTodo = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const todo = await todoService.deleteTodo(id);
+    res.status(200).json({
+      data: todo,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
 module.exports = { getAllTodo, getTodoById, addTodo, putTodo, patchTodo, deleteTodo };
