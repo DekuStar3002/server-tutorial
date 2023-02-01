@@ -1,10 +1,11 @@
 const { todoService } = require('../service/index');
+const { Errors } = require('../utils');
 
 const getAllTodo = async (req, res) => {
   try {
     const data = await todoService.getAllTodos();
     res.status(200).json({
-      data: data,
+      data
     });
   } catch (error) {
     res.status(500).json({
@@ -18,7 +19,7 @@ const getTodoById = async (req, res) => {
     const { id } = req.params; 
     const todo = await todoService.getTodoById(id);
     res.status(200).json({
-      data: todo ? [todo] : [],
+      data: todo ? todo : {},
     });
   } catch (error) {
     res.status(500).json({
@@ -35,9 +36,14 @@ const addTodo = async (req, res) => {
       data: [ todo ],
     });
   } catch (error) {
-    res.status(500).json({
-      error: error.message,
-    });
+    if(error instanceof Errors.NotFoundError)
+      res.status(error.status).json({
+        message: error.message
+      });
+    else
+      res.status(500).json({
+        error: error.message,
+      });
   }
 };
 
@@ -45,7 +51,7 @@ const putTodo = async (req, res) => {
   try {
     const id = Number(req.params.id);
     const { body } = req;
-    const todo = await todoService.putTodo(id, body);
+    const todo = await todoService.updateTodo(id, body);
     res.status(200).json({
       data: todo,
     });
@@ -60,7 +66,7 @@ const patchTodo = async (req, res) => {
   try {
     const id = Number(req.params.id);
     const { body } = req;
-    const todo = await todoService.patchTodo(id, body);
+    const todo = await todoService.updateTodo(id, body);
     res.status(200).json({
       data: todo,
     });

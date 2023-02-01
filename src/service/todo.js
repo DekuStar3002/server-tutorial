@@ -13,18 +13,10 @@ const getTodoById = async (id) => {
 };
 
 const addTodo = async (name) => {
-  return Todo.create({name: name});
+  return Todo.create({name});
 };
 
-const putTodo = async (id, body) => {
-  return Todo.update(body, {
-    where: {
-      id
-    }
-  });
-};
-
-const patchTodo = (id, body) => {
+const updateTodo = async (id, body) => {
   return Todo.update(body, {
     where: {
       id
@@ -40,4 +32,4 @@ const deleteTodo = async (id) => {
   });
 };
 
-module.exports = { getAllTodos, getTodoById, addTodo, putTodo, patchTodo, deleteTodo };
+module.exports = { getAllTodos, getTodoById, addTodo, updateTodo, deleteTodo };
