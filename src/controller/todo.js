@@ -1,5 +1,4 @@
 const { todoService } = require('../service/index');
-const { Errors } = require('../utils');
 
 const getAllTodo = async (req, res) => {
   try {
@@ -36,14 +35,9 @@ const addTodo = async (req, res) => {
       data: [ todo ],
     });
   } catch (error) {
-    if(error instanceof Errors.NotFoundError)
-      res.status(error.status).json({
-        message: error.message
-      });
-    else
-      res.status(500).json({
-        error: error.message,
-      });
+    res.status(500).json({
+      error: error.message,
+    });
   }
 };
 

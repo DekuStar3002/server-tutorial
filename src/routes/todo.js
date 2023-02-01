@@ -7,9 +7,9 @@ router.route('/todo')
   .post(todoMiddleware.checkBody, todoController.addTodo);
 
 router.route('/todo/:id')
-  .get(todoController.getTodoById)
-  .put(todoController.putTodo)
-  .patch(todoController.patchTodo)
-  .delete(todoController.deleteTodo);
+  .get(todoMiddleware.checkParams, todoController.getTodoById)
+  .put(todoMiddleware.checkParams, todoMiddleware.checkPutObject, todoController.putTodo)
+  .patch(todoMiddleware.checkParams, todoMiddleware.checkPatchObject, todoController.patchTodo)
+  .delete(todoMiddleware.checkParams, todoController.deleteTodo);
 
 module.exports = router;

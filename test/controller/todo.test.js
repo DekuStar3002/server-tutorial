@@ -77,13 +77,13 @@ describe('Todo Controller', () => {
     await todoController.addTodo(mockReq, mockRes);
     expect(mockRes.status).toBeCalledWith(201);
     expect(mockRes.json).toBeCalledWith({
-      data: {
+      data: [{
         id: 1,
         name: 'todo1',
         isCompleted: false,
         createdAt: 'date-time',
         updatedAt: 'date-time'
-      }
+      }]
     });
   });
 
