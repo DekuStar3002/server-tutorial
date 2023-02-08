@@ -1,19 +1,20 @@
 const { Todo } = require('../../database/models');
 
-const getAllTodos = async () => {
-  return Todo.findAll();
+const getAllTodos = async (userId) => {
+  return Todo.findAll({ where: { userId } });
 };
 
-const getTodoById = async (id) => {
+const getTodoById = async (id, userId) => {
   return Todo.findOne({
     where: {
       id,
+      userId
     }
   });
 };
 
-const addTodo = async (name) => {
-  return Todo.create({name});
+const addTodo = async (name, userId) => {
+  return Todo.create({name, userId});
 };
 
 const updateTodo = async (id, body) => {

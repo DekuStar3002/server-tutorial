@@ -1,3 +1,4 @@
+const { default: axios } = require('axios');
 const Joi = require('joi');
 
 const checkBody = (req, res, next) => {
@@ -52,4 +53,19 @@ const checkPatchObject = (req, res, next) => {
   next();
 };
 
-module.exports = { checkBody, checkParams, checkPutObject, checkPatchObject };
+const validateUser = async (req, res, next) => {
+  console.log(req.cookies);
+  const response = await axios.get('http://localhost:5000/user/validation', {
+    headers: {
+      Cookie: 'jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwidXNlciI6InVzZXJuYXNzYXNkYW1lczEiLCJpYXQiOjE2NzU4MzczMTB9.OKQzHDZ-IHSwtJCa_zSH137DjiC2OPCzUj8wB2QpzbI'
+    }
+  });
+  if(response.status !== 200) {
+    res.status(response.status).json({ error: response.data.error });
+    return;
+  }
+  req.user = response.data.user;
+  next();
+};
+
+module.exports = { checkBody, checkParams, checkPutObject, checkPatchObject, validateUser };

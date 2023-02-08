@@ -25,20 +25,20 @@ describe('Todo Service', () => {
   });
 
   it('should return single todo data when getTodoById called', async () => {
+    const id = 1;
     jest.spyOn(Todo, 'findOne').mockResolvedValue(
       {
-        id: 1,
+        id,
         name: 'todo1',
         isCompleted: false,
         createdAt: 'date-time',
         updatedAt: 'date-time'
       }
     );
-    const id = 1;
     const task = await todoService.getTodoById(id);
     expect(task).toEqual(
       {
-        id: 1,
+        id,
         name: 'todo1',
         isCompleted: false,
         createdAt: 'date-time',

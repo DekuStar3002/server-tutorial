@@ -2,7 +2,8 @@ const { todoService } = require('../service/index');
 
 const getAllTodo = async (req, res) => {
   try {
-    const data = await todoService.getAllTodos();
+    const userId = req.user.id;
+    const data = await todoService.getAllTodos(userId);
     res.status(200).json({
       data
     });
@@ -30,7 +31,8 @@ const getTodoById = async (req, res) => {
 const addTodo = async (req, res) => {
   try {
     const { name } = req.body;
-    const todo = await todoService.addTodo(name);
+    const userId = req.user.id;
+    const todo = await todoService.addTodo(name, userId);
     res.status(201).json({
       data: [ todo ],
     });
